@@ -103,6 +103,14 @@ public class BuildTriggerConfig implements Describable<BuildTriggerConfig> {
 		return projects;
 	}
 
+    public boolean hasEnvVariables(EnvVars env) {
+        if (null != env) {
+            String expanded = env.expand(projects);
+            return expanded.equalsIgnoreCase(projects) ? true : false;
+        }
+        return false;
+    }
+
     public String getProjects(EnvVars env) {
         return (env != null ? env.expand(projects) : projects);
     }

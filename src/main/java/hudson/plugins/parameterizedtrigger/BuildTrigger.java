@@ -53,26 +53,29 @@ public class BuildTrigger extends Notifier implements DependecyDeclarer {
 	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
 
         HashSet<BuildTriggerConfig> alreadyFired = new HashSet<BuildTriggerConfig>();
+		boolean hasEnvVariables = false;
 
         // If this project has non-abstract projects, we need to fire them
         for (BuildTriggerConfig config : configs) {
-            boolean hasNonAbstractProject = false;
+	        boolean hasNonAbstractProject = false;
 
-            List<Job> jobs = config.getJobs(build.getRootBuild().getProject().getParent(), build.getEnvironment(listener));
-            for (Job j : jobs) {
-                if (!(j instanceof AbstractProject)) {
-                    hasNonAbstractProject = true;
-                    break;
-                }
-            }
-            // Fire this config's projects if not already fired
-            if (hasNonAbstractProject) {
-                config.perform(build, launcher, listener);
-                alreadyFired.add(config);
-            }
+	        List<Job> jobs = config.getJobs(build.getRootBuild().getProject().getParent(), build.getEnvironment(listener));
+	        hasEnvVariables = hasEnvVariables || config.hasEnvVariables(build.getEnvironment(listener));
+
+	        for (Job j : jobs) {
+		        if (!(j instanceof AbstractProject)) {
+			        hasNonAbstractProject = true;
+			        break;
+		        }
+	        }
+	        // Fire this config's projects if not already fired
+	        if (hasNonAbstractProject) {
+		        config.perform(build, launcher, listener);
+		        alreadyFired.add(config);
+	        }
         }
 
-        if (canDeclare(build.getProject())) {
+        if (canDeclare(build.getProject()) && !hasEnvVariables) {
             // job will get triggered by dependency graph, so we have to capture buildEnvironment NOW before
             // hudson.model.AbstractBuild.AbstractBuildExecution#cleanUp is called and reset
             EnvVars env = build.getEnvironment(listener);
