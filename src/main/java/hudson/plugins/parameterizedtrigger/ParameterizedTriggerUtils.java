@@ -24,17 +24,29 @@
 
 package hudson.plugins.parameterizedtrigger;
 
+import hudson.EnvVars;
+import hudson.Extension;
 import hudson.FilePath;
+import hudson.model.EnvironmentContributor;
 import hudson.model.ParameterValue;
 import hudson.model.ParametersAction;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Properties;
 import jenkins.util.VirtualFile;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+
+import javax.annotation.Nonnull;
 
 /**
  * Common utility methods.
@@ -83,14 +95,58 @@ public class ParameterizedTriggerUtils {
             in.close();
         }
     }
-    
-    public static ParametersAction mergeParameters(ParametersAction base, ParametersAction overlay) {
+
+    public static CustomParametersAction mergeParameters(CustomParametersAction base, CustomParametersAction overlay) {
         LinkedHashMap<String,ParameterValue> params = new LinkedHashMap<String,ParameterValue>();
-        for (ParameterValue param : base.getParameters())
+        for (ParameterValue param : base.getParameters()) {
             params.put(param.getName(), param);
-        for (ParameterValue param : overlay.getParameters())
+        }
+        for (ParameterValue param : overlay.getParameters()) {
             params.put(param.getName(), param);
-        return new ParametersAction(params.values().toArray(new ParameterValue[params.size()]));
+        }
+        return new CustomParametersAction(params.values().toArray(new ParameterValue[params.size()]));
     }
 
+    @Restricted(NoExternalUse.class)
+    public static class CustomParametersAction extends ParametersAction { //TODO rename
+        private List<ParameterValue> parameters;
+
+        public CustomParametersAction(@Nonnull List<ParameterValue> parameters) {
+            this.parameters = parameters;
+        }
+
+        public CustomParametersAction(ParameterValue... parameters) {
+            this(Arrays.asList(parameters));
+        }
+
+        @Override
+        public List<ParameterValue> getParameters() {
+            return Collections.unmodifiableList(parameters);
+        }
+
+        @Override
+        public ParameterValue getParameter(String name) {
+            for (ParameterValue parameter : parameters) {
+                if (parameter != null && parameter.getName().equals(name)) {
+                    return parameter;
+                }
+            }
+
+            return null;
+        }
+
+        @Extension
+        public static final class CustomParametersActionEnvironmentContributor extends EnvironmentContributor {
+            @Override
+            public void buildEnvironmentFor(@Nonnull Run r, @Nonnull EnvVars envs, @Nonnull TaskListener listener)
+                    throws IOException, InterruptedException {
+                CustomParametersAction action = r.getAction(CustomParametersAction.class);
+                if (action != null) {
+                    for (ParameterValue p : action.getParameters()) {
+                        envs.putIfNotNull(p.getName(), String.valueOf(p.getValue()));
+                    }
+                }
+            }
+        }
+    }
 }

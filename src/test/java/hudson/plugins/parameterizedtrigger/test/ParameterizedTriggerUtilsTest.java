@@ -5,17 +5,18 @@ import hudson.model.ParametersAction;
 import hudson.model.ParameterValue;
 import hudson.model.StringParameterValue;
 
+import hudson.plugins.parameterizedtrigger.ParameterizedTriggerUtils.CustomParametersAction;
 import junit.framework.TestCase;
 
 public class ParameterizedTriggerUtilsTest extends TestCase {
 
     public void testMergeParameters() {
-        ParametersAction base = new ParametersAction(
+        CustomParametersAction base = new CustomParametersAction(
                 new StringParameterValue("key1", "value1"),
                 new StringParameterValue("key2", "value2")
                 );
 
-        ParametersAction overlay = new ParametersAction(
+        CustomParametersAction overlay = new CustomParametersAction(
                 new StringParameterValue("key2", "not-value2"),
                 new StringParameterValue("key3", "value3")
                 );

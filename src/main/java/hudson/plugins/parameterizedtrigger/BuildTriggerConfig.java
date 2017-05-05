@@ -27,6 +27,7 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.queue.Tasks;
 import hudson.plugins.parameterizedtrigger.AbstractBuildParameters.DontTriggerException;
+import hudson.plugins.parameterizedtrigger.ParameterizedTriggerUtils.CustomParametersAction;
 import hudson.plugins.promoted_builds.Promotion;
 import hudson.security.ACL;
 import hudson.tasks.Messages;
@@ -344,20 +345,25 @@ public class BuildTriggerConfig implements Describable<BuildTriggerConfig> {
 
     List<Action> getBaseActions(Collection<AbstractBuildParameters> configs, AbstractBuild<?,?> build, TaskListener listener)
             throws IOException, InterruptedException, DontTriggerException {
-		List<Action> actions = new ArrayList<Action>();
-		ParametersAction params = null;
-		for (AbstractBuildParameters config : configs) {
-			Action a = config.getAction(build, listener);
-			if (a instanceof ParametersAction) {
-				params = params == null ? (ParametersAction)a
-					: ParameterizedTriggerUtils.mergeParameters(params, (ParametersAction)a);
-			} else if (a != null) {
-				actions.add(a);
-			}
-		}
-		if (params != null) actions.add(params);
-		return actions;
-	}
+        List<Action> actions = new ArrayList<Action>();
+        CustomParametersAction params = null;
+        for (AbstractBuildParameters config : configs) {
+            Action a = config.getAction(build, listener);
+            if (a instanceof ParametersAction) {
+                CustomParametersAction customParametersAction =
+                        new CustomParametersAction(((ParametersAction) a).getParameters());
+                if (params == null) {
+                    params =  customParametersAction;
+                } else {
+                    params = ParameterizedTriggerUtils.mergeParameters(params, customParametersAction);
+                }
+            } else if (a != null) {
+                actions.add(a);
+            }
+        }
+        if (params != null) actions.add(params);
+        return actions;
+    }
 
     List<Action> getBuildActions(List<Action> baseActions, Job<?,?> project) {
             List<Action> actions = new ArrayList<Action>(baseActions);

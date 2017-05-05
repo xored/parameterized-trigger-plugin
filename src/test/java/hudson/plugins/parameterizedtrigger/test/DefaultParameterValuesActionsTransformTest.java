@@ -10,6 +10,8 @@ import hudson.plugins.parameterizedtrigger.DefaultParameterValuesActionsTransfor
 
 import java.io.IOException;
 
+import hudson.plugins.parameterizedtrigger.ParameterizedTriggerUtils;
+import hudson.plugins.parameterizedtrigger.ParameterizedTriggerUtils.CustomParametersAction;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -31,7 +33,7 @@ public class DefaultParameterValuesActionsTransformTest {
                     new StringParameterDefinition("key2", "value2")
                     ));
 
-        ParametersAction action = new ParametersAction(
+        CustomParametersAction action = new CustomParametersAction(
                 new StringParameterValue("key2", "not-value2"),
                 new StringParameterValue("key3", "value3")
                 );
