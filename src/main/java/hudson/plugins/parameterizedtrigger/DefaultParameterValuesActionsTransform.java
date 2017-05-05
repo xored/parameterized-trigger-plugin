@@ -1,6 +1,7 @@
 package hudson.plugins.parameterizedtrigger;
 
 import hudson.model.*;
+import hudson.plugins.parameterizedtrigger.ParameterizedTriggerUtils.CustomParametersAction;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -11,16 +12,17 @@ import java.util.ArrayList;
  * If they do not, append them with the specified default value.
  */
 public class DefaultParameterValuesActionsTransform implements ITransformProjectParametersAction {
-    public ParametersAction transformParametersAction(ParametersAction a, Job<?,?> project) {
-        return ParameterizedTriggerUtils.mergeParameters(getDefaultParameters(project), (ParametersAction)a);
+    @Override
+    public CustomParametersAction transformParametersAction(CustomParametersAction a, Job<?,?> project) {
+        return ParameterizedTriggerUtils.mergeParameters(getDefaultParameters(project), a);
     }
 
-    private static ParametersAction getDefaultParameters(Job<?,?> project) {
+    private static CustomParametersAction getDefaultParameters(Job<?,?> project) {
 
         ParametersDefinitionProperty property = project.getProperty(ParametersDefinitionProperty.class);
 
         if (property == null) {
-            return new ParametersAction();
+            return new CustomParametersAction();
         }
 
         List<ParameterValue> parameters = new ArrayList<ParameterValue>();
@@ -31,6 +33,6 @@ public class DefaultParameterValuesActionsTransform implements ITransformProject
             }
         }
 
-        return new ParametersAction(parameters);
+        return new CustomParametersAction(parameters);
     }
 }

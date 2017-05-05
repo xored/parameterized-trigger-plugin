@@ -6,6 +6,8 @@ import hudson.model.ParametersAction;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.StringParameterValue;
 import hudson.model.Project;
+import hudson.plugins.parameterizedtrigger.ParameterizedTriggerUtils;
+import hudson.plugins.parameterizedtrigger.ParameterizedTriggerUtils.CustomParametersAction;
 import hudson.plugins.parameterizedtrigger.ProjectSpecificParameterValuesActionTransform;
 
 import java.io.IOException;
@@ -30,7 +32,7 @@ public class ProjectSpecificParameterValuesActionTransformTest {
                     new BooleanParameterDefinition("key1", false, "derp")
                     ));
 
-        ParametersAction action = new ParametersAction(
+        CustomParametersAction action = new CustomParametersAction(
                 new StringParameterValue("key1", "true")
                 );
 

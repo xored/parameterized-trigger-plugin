@@ -4,6 +4,7 @@ import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Job;
 import hudson.model.ParametersAction;
+import hudson.plugins.parameterizedtrigger.ParameterizedTriggerUtils.CustomParametersAction;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -20,7 +21,7 @@ public class ProjectSpecificParametersActionFactory {
 
     public final List<Action> getProjectSpecificBuildActions(List<Action> baseActions, Job<?,?> project) {
         List<Action> actions = new ArrayList<Action>();
-        ParametersAction pa = getParametersAction(baseActions);
+        CustomParametersAction pa = getParametersAction(baseActions);
 
         // Copy everything except the ParametersAction
         for (Action a : baseActions) {
@@ -38,13 +39,13 @@ public class ProjectSpecificParametersActionFactory {
         return actions;
     }
 
-    private static ParametersAction getParametersAction(List<Action> actions) {
+    private static CustomParametersAction getParametersAction(List<Action> actions) {
         for (Action a : actions) {
             if (a instanceof ParametersAction) {
-                return (ParametersAction)a;
+                return (CustomParametersAction) a;
             }
         }
 
-        return new ParametersAction();
+        return new CustomParametersAction();
     }
 }

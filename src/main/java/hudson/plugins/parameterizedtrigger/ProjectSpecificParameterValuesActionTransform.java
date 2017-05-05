@@ -11,6 +11,7 @@ import hudson.model.ParameterValue;
 import hudson.model.SimpleParameterDefinition;
 import hudson.model.StringParameterDefinition;
 import hudson.model.StringParameterValue;
+import hudson.plugins.parameterizedtrigger.ParameterizedTriggerUtils.CustomParametersAction;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ import java.lang.RuntimeException;
  * Convert Generic ParameterValues to the type indicated by the Project's ParameterDefinitions
  */
 public class ProjectSpecificParameterValuesActionTransform implements ITransformProjectParametersAction {
-    public ParametersAction transformParametersAction(ParametersAction a, Job<?,?> project) {
+    public CustomParametersAction transformParametersAction(CustomParametersAction a, Job<?,?> project) {
         Map<String, ParameterDefinition> parameterDefinitions = 
             getParameterDefinitionsMap(project);
 
@@ -34,7 +35,7 @@ public class ProjectSpecificParameterValuesActionTransform implements ITransform
         }
 
         /* Add default values from defined params in the target job */
-        return new ParametersAction(params);
+        return new CustomParametersAction(params);
     }
 
     private static Map<String, ParameterDefinition> getParameterDefinitionsMap(Job<?,?> project) {
